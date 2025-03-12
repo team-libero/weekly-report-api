@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const employeeController = require('./controllers/employeeController');
 const loginController = require('./controllers/loginController');
+const reportController = require('./controllers/reportController');
 require('dotenv').config();
 
 //ミドルウェアを設定する
@@ -62,11 +63,32 @@ app.put('/employee/put', (req, res) =>
 app.delete('/employee/delete', (req, res) =>
   employeeController.delData(req, res, db)
 );
+//LD一覧取得
+app.get('/getTld', (req, res) => employeeController.getLeaders(req, res, db));
+//営業社員一覧取得
+app.get('/getSalesEmployee', (req, res) =>
+  employeeController.getSalesEmployees(req, res, db)
+);
+
+//週報登録
+app.post('/reports/reportRegister', (req, res) =>
+  reportController.submitReport(req, res, db)
+);
 
 /* ログイン */
 //取得
 app.post('/login/getLoginData', (req, res) =>
   loginController.getLoginData(req, res, db)
+);
+
+//週報更新
+app.put('/reports/reportRegister', (req, res) =>
+  reportController.editReport(req, res, db)
+);
+
+//前回の週報コピー
+app.get('/reports/reportRegister/copy', (req, res) =>
+  reportController.getLatestReport(req, res, db)
 );
 
 //サーバ接続
