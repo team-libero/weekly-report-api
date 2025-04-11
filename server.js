@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const employeeController = require('./controllers/employeeController');
+const weeklyReportController = require('./controllers/weeklyReportController');
 require('dotenv').config();
 
 //ミドルウェアを設定する
@@ -51,6 +52,11 @@ app.post('/employee/post', (req, res) => employeeController.postData(req, res, d
 app.put('/employee/put', (req, res) => employeeController.putData(req, res, db));
 //削除
 app.delete('/employee/delete', (req, res) => employeeController.delData(req, res, db));
+
+/* 週報情報 */
+// ヘッダー取得
+app.get('/reports', (req, res) => weeklyReportController.getData(req, res, db));
+// 一覧取得
 
 //サーバ接続
 app.listen(process.env.API_PORT, () => {
