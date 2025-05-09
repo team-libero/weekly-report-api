@@ -3,6 +3,7 @@ const app = express();
 const employeeController = require('./controllers/employeeController');
 const loginController = require('./controllers/loginController');
 const reportController = require('./controllers/reportController');
+const reportDetailController = require('./controllers/reportDetailController');
 require('dotenv').config();
 
 //ミドルウェアを設定する
@@ -89,6 +90,11 @@ app.put('/reports/reportRegister', (req, res) =>
 //前回の週報コピー
 app.get('/reports/reportRegister/copy', (req, res) =>
   reportController.getLatestReport(req, res, db)
+);
+
+//週報詳細情報取得
+app.get('/reports/reportDetail', (req, res) =>
+  reportDetailController.getDetailData(req, res, db)
 );
 
 //サーバ接続
