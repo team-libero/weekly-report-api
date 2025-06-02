@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
 const employeeController = require('./controllers/employeeController');
+const loginController = require('./controllers/loginController');
+const reportController = require('./controllers/reportController');
 const weeklyReportController = require('./controllers/weeklyReportController');
 require('dotenv').config();
 
@@ -18,8 +20,8 @@ var db = require('knex')({
     port: process.env.DB_PORT,
     user: process.env.DB_USER,
     password: process.env.DB_PASS,
-    database: process.env.DB_NAME
-  }
+    database: process.env.DB_NAME,
+  },
 });
 
 //ミドルウェア
@@ -31,8 +33,8 @@ const corsOptions = {
     } else {
       callback(new Error('Not allowed by CORS'));
     }
-  }
-}
+  },
+};
 app.use(helmet());
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
@@ -43,20 +45,63 @@ app.get('/', (req, res) => res.send('APIサーバー起動中'));
 
 /* 社員マスタ */
 //取得
-app.get('/employee/get', (req, res) => employeeController.getData(req, res, db));
+app.get('/employee/get', (req, res) =>
+  employeeController.getData(req, res, db)
+);
 //最大社員ID取得
-app.get('/employee/getMaxEmpId', (req, res) => employeeController.getMaxEmpId(req, res, db));
+app.get('/employee/getMaxEmpId', (req, res) =>
+  employeeController.getMaxEmpId(req, res, db)
+);
 //追加
-app.post('/employee/post', (req, res) => employeeController.postData(req, res, db));
+app.post('/employee/post', (req, res) =>
+  employeeController.postData(req, res, db)
+);
 //更新
-app.put('/employee/put', (req, res) => employeeController.putData(req, res, db));
+app.put('/employee/put', (req, res) =>
+  employeeController.putData(req, res, db)
+);
 //削除
-app.delete('/employee/delete', (req, res) => employeeController.delData(req, res, db));
+app.delete('/employee/delete', (req, res) =>
+  employeeController.delData(req, res, db)
+);
+//LD一覧取得
+app.get('/getTld', (req, res) => employeeController.getLeaders(req, res, db));
+//営業社員一覧取得
+app.get('/getSalesEmployee', (req, res) =>
+  employeeController.getSalesEmployees(req, res, db)
+);
+
+//週報登録
+app.post('/reports/reportRegister', (req, res) =>
+  reportController.submitReport(req, res, db)
+);
+
+/* ログイン */
+//取得
+app.post('/login', (req, res) => loginController.getLoginData(req, res, db));
+
+//週報更新
+app.put('/reports/reportRegister', (req, res) =>
+  reportController.editReport(req, res, db)
+);
+
+//前回の週報コピー
+app.get('/reports/reportRegister/copy', (req, res) =>
+  reportController.getLatestReport(req, res, db)
+);
+app.delete('/employee/delete', (req, res) =>
+  employeeController.delData(req, res, db)
+);
 
 /* 週報情報 */
-// ヘッダー取得
-app.get('/reports', (req, res) => weeklyReportController.getData(req, res, db));
-// 一覧取得
+// 週報基本情報取得
+app.get('/reportsInfo', (req, res) =>
+  weeklyReportController.getData(req, res, db)
+);
+// 週報基本情報取得
+app.get('/reports', (req, res) =>
+  weeklyReportController.getWeeklyReportList(req, res, db)
+);
 
 //サーバ接続
 app.listen(process.env.API_PORT, () => {
