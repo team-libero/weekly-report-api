@@ -52,7 +52,7 @@ const getWeeklyReportList = async (req, res, db) => {
 
   try {
     await db.transaction(async (trx) => {
-      const result = await trx
+      const reportList = await trx
         .select(
           "weekly_report_id as reportId",
           trx.raw(
@@ -66,7 +66,7 @@ const getWeeklyReportList = async (req, res, db) => {
         // .limit(10)
         // .offset((pageNo - 1) * 10); // ページ番号を使ってOFFSETを計算
 
-      res.json({ result });
+      res.json({ reportList });
     });
   } catch (error) {
     //  await trx.query("ROLLBACK"); // エラーが発生した場合、トランザクションをロールバック
