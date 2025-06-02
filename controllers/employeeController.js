@@ -40,7 +40,7 @@ const getData = (req, res, db) => {
         .then((items) => {
           if (items.length) {
             let teamList = [];
-            let team;
+            let team = {};
             items.map((item) => {
               if (!teamList || item.teamId !== team.teamId) {
                 if (team && team.teamId && item.teamId !== team.teamId) {
