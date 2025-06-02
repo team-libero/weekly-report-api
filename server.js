@@ -78,9 +78,7 @@ app.post('/reports/reportRegister', (req, res) =>
 
 /* ログイン */
 //取得
-app.post('/login/getLoginData', (req, res) =>
-  loginController.getLoginData(req, res, db)
-);
+app.post('/login', (req, res) => loginController.getLoginData(req, res, db));
 
 //週報更新
 app.put('/reports/reportRegister', (req, res) =>
