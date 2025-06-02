@@ -1,5 +1,6 @@
 const getDetailData = (req, res, db) => {
   db.select(
+    'weekly_report.emp_id as emp_id',
     'emp_info.emp_lname as emp_lname',
     'emp_info.emp_fname as emp_fname',
     'leader_emp_info.emp_lname as leader_emp_lname',
