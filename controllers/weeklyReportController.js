@@ -1,10 +1,16 @@
+/**
+ * 週報基本情報取得.
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} db
+ */
 const getData = async (req, res, db) => {
   const { employeeId } = req.query;
-  console.log("Employee ID:", employeeId);
 
   try {
     await db.transaction(async (trx) => {
-      const result1 = await trx
+      const result = await trx
         .select(
           trx.raw("CONCAT(em1.emp_lname, ' ', em1.emp_fname) as name"),
           trx.raw("CONCAT(em2.emp_lname, ' ', em2.emp_fname) as teamLdName"),
@@ -18,14 +24,49 @@ const getData = async (req, res, db) => {
         .innerJoin("employee_mst as em1", "wr1.emp_id", "em1.emp_id")
         .innerJoin("employee_mst as em2", "wr1.leader_emp_id", "em2.emp_id")
         .innerJoin("employee_mst as em3", "wr1.sales_emp_id", "em3.emp_id")
-        .where("wr1.emp_id", 26)
+        .where("wr1.emp_id", employeeId)
         .whereIn(
           "wr1.weekly_report_id",
           trx("weekly_report as wr2")
             .select(trx.raw("MAX(wr2.weekly_report_id)"))
-            .where({ "wr2.emp_id": 26 })
+            .where({ "wr2.emp_id": employeeId })
         );
-      res.json({ result1 });
+      res.json({ result });
+    });
+  } catch (error) {
+    //  await trx.query("ROLLBACK"); // エラーが発生した場合、トランザクションをロールバック
+    console.error(error);
+    res.status(400).send("Server Error");
+  }
+};
+
+/**
+ * 週報一覧取得.
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} db
+ */
+const getWeeklyReportList = async (req, res, db) => {
+  const { employeeId, pageNo } = req.query;
+
+  try {
+    await db.transaction(async (trx) => {
+      const result = await trx
+        .select(
+          "weekly_report_id as reportId",
+          trx.raw(
+            "TO_CHAR(period_start_date, 'YYYYMMDD') || '～' || TO_CHAR(period_end_date, 'YYYYMMDD') as reportPeriod"
+          )
+        )
+        .from("weekly_report")
+        .where("emp_id", employeeId)
+        .orderBy("period_start_date", "desc")
+        // TODO 件数取得絞る
+        // .limit(10)
+        // .offset((pageNo - 1) * 10); // ページ番号を使ってOFFSETを計算
+
+      res.json({ result });
     });
   } catch (error) {
     //  await trx.query("ROLLBACK"); // エラーが発生した場合、トランザクションをロールバック
@@ -36,4 +77,5 @@ const getData = async (req, res, db) => {
 
 module.exports = {
   getData,
+  getWeeklyReportList
 };

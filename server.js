@@ -54,9 +54,10 @@ app.put('/employee/put', (req, res) => employeeController.putData(req, res, db))
 app.delete('/employee/delete', (req, res) => employeeController.delData(req, res, db));
 
 /* 週報情報 */
-// ヘッダー取得
-app.get('/reports', (req, res) => weeklyReportController.getData(req, res, db));
-// 一覧取得
+// 週報基本情報取得
+app.get('/reportsInfo', (req, res) => weeklyReportController.getData(req, res, db));
+// 週報基本情報取得
+app.get('/reports', (req, res) => weeklyReportController.getWeeklyReportList(req, res, db));
 
 //サーバ接続
 app.listen(process.env.API_PORT, () => {
