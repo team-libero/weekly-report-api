@@ -10,13 +10,25 @@ const getDetailData = (req, res, db) => {
     'prime_contractor_name',
     'onsite_address',
     'fixed_time',
+    db.raw(
+      'to_char("period_start_date", \'YYYY/MM/DD\') as "period_start_date"'
+    ),
+    db.raw('to_char("period_end_date", \'YYYY/MM/DD\') as "period_end_date"'),
     'source_of_sales_info',
     'how_to_collect_sales_info',
     'sales_info',
     'avg_overtime',
     'work_content',
     'minimun_work_time',
-    'reachability'
+    'reachability',
+    'progress',
+    'physical_condition',
+    'relationship',
+    'failure_pointed_out',
+    'impression',
+    'difficulty_level',
+    'sence_of_schedule',
+    'situation_of_other_employees'
   )
     .from('weekly_report')
     .innerJoin(
