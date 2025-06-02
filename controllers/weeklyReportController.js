@@ -1,41 +1,31 @@
 const getData = async (req, res, db) => {
-  const { employeeId, pageNo, dataAmount } = req.query;
+  const { employeeId } = req.query;
   console.log("Employee ID:", employeeId);
 
   try {
     await db.transaction(async (trx) => {
       const result1 = await trx
         .select(
-          'CONCAT("em1.EMP_LNAME", " ", "em1.EMP_FNAME") as name',
-          'CONCAT("em2.EMP_LNAME", " ", "em2.EMP_FNAME") as teamLdName',
-          "wr1.USER_COMPANY_NAME as userCompany",
-          "wr1.PRIME_CONTRACTOR_NAME as primeContractor",
-          "wr1.ONSITE_ADDRESS as address",
-          "wr1.FIXED_TIME as regularTime",
-          'CONCAT("em3.EMP_LNAME", " ", "em3.EMP_FNAME") as salesEmployee'
+          trx.raw("CONCAT(em1.emp_lname, ' ', em1.emp_fname) as name"),
+          trx.raw("CONCAT(em2.emp_lname, ' ', em2.emp_fname) as teamLdName"),
+          "wr1.user_company_name as userCompany",
+          "wr1.prime_contractor_name as primeContractor",
+          "wr1.onsite_address as address",
+          "wr1.fixed_time as regularTime",
+          trx.raw("CONCAT(em3.emp_lname, ' ', em3.emp_fname) as salesEmployee")
         )
         .from("weekly_report as wr1")
-        .innerJoin("employee_mst as em1", "wr1.EMP_ID", "em1.EMP_ID")
-        .innerJoin("employee_mst as em2", "wr1.LEADER_EMP_ID", "em2.EMP_ID")
-        .innerJoin("employee_mst as em3", "wr1.SALES_EMP_ID", "em3.EMP_ID")
-        .where(
-          { "wr1.EMP_ID": employeeId },
+        .innerJoin("employee_mst as em1", "wr1.emp_id", "em1.emp_id")
+        .innerJoin("employee_mst as em2", "wr1.leader_emp_id", "em2.emp_id")
+        .innerJoin("employee_mst as em3", "wr1.sales_emp_id", "em3.emp_id")
+        .where("wr1.emp_id", 26)
+        .whereIn(
+          "wr1.weekly_report_id",
           trx("weekly_report as wr2")
-            .max("wr2.WEEKLY_REPORT_ID")
-            .where({ "wr2.EMP_ID": employeeId })
+            .select(trx.raw("MAX(wr2.weekly_report_id)"))
+            .where({ "wr2.emp_id": 26 })
         );
       res.json({ result1 });
-
-      //   const result2 = await trx
-      //     .select("*")
-      //     .from("weekly_report")
-      //     .where({ some_column: some_value });
-
-      //   if (result1.length || result2.length) {
-      //     res.json({ result1, result2 });
-      //   } else {
-      //     res.json({ dataExists: "false" });
-      //   }
     });
   } catch (error) {
     //  await trx.query("ROLLBACK"); // エラーが発生した場合、トランザクションをロールバック
