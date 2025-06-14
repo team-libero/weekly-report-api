@@ -36,7 +36,7 @@ const getData = (req, res, db) => {
 		        sub.where(whereCol, whereVal)
 	       }
         })
-        .orderByRaw('case team_mst.team_id::integer when ' + (items[0].teamId ? items[0].teamId : 0) + ' then 0 else 1 end, employee_mst.emp_id::integer asc')
+        .orderByRaw('case team_mst.team_id::integer when ' + (items[0].teamId ? items[0].teamId : 0) + ' then 0 else 1 end, team_mst.team_id::integer asc, employee_mst.emp_id::integer asc')
         .then((items) => {
           if (items.length) {
             let teamList = [];
