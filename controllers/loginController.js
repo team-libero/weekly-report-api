@@ -1,3 +1,4 @@
+/* ログインAPI */
 const getLoginData = (req, res, db) => {
   db.select(
     'login.emp_id',
