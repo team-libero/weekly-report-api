@@ -8,29 +8,29 @@ const getBaseData = async (req, res, db) => {
         .select(
           trx.raw("CONCAT(em1.emp_lname, ' ', em1.emp_fname) as name"),
           trx.raw("CONCAT(em2.emp_lname, ' ', em2.emp_fname) as teamLdName"),
-          "wr1.user_company_name as userCompany",
-          "wr1.prime_contractor_name as primeContractor",
-          "wr1.onsite_address as address",
-          "wr1.fixed_time as regularTime",
+          'wr1.user_company_name as userCompany',
+          'wr1.prime_contractor_name as primeContractor',
+          'wr1.onsite_address as address',
+          'wr1.fixed_time as regularTime',
           trx.raw("CONCAT(em3.emp_lname, ' ', em3.emp_fname) as salesEmployee")
         )
-        .from("weekly_report as wr1")
-        .innerJoin("employee_mst as em1", "wr1.emp_id", "em1.emp_id")
-        .innerJoin("employee_mst as em2", "wr1.leader_emp_id", "em2.emp_id")
-        .innerJoin("employee_mst as em3", "wr1.sales_emp_id", "em3.emp_id")
-        .where("wr1.emp_id", employeeId)
+        .from('weekly_report as wr1')
+        .innerJoin('employee_mst as em1', 'wr1.emp_id', 'em1.emp_id')
+        .innerJoin('employee_mst as em2', 'wr1.leader_emp_id', 'em2.emp_id')
+        .innerJoin('employee_mst as em3', 'wr1.sales_emp_id', 'em3.emp_id')
+        .where('wr1.emp_id', employeeId)
         .whereIn(
-          "wr1.weekly_report_id",
-          trx("weekly_report as wr2")
-            .select(trx.raw("MAX(wr2.weekly_report_id)"))
-            .where({ "wr2.emp_id": employeeId })
+          'wr1.weekly_report_id',
+          trx('weekly_report as wr2')
+            .select(trx.raw('MAX(wr2.weekly_report_id)'))
+            .where({ 'wr2.emp_id': employeeId })
         );
       res.json({ result });
     });
   } catch (error) {
     //  await trx.query("ROLLBACK"); // エラーが発生した場合、トランザクションをロールバック
     console.error(error);
-    res.status(400).send("Server Error");
+    res.status(400).send('Server Error');
   }
 };
 
@@ -42,24 +42,24 @@ const getWeeklyReportList = async (req, res, db) => {
     await db.transaction(async (trx) => {
       const reportList = await trx
         .select(
-          "weekly_report_id as reportId",
+          'weekly_report_id as reportId',
           trx.raw(
             "TO_CHAR(period_start_date, 'YYYYMMDD') || '～' || TO_CHAR(period_end_date, 'YYYYMMDD') as reportPeriod"
           )
         )
-        .from("weekly_report")
-        .where("emp_id", employeeId)
-        .orderBy("period_start_date", "desc")
-        // TODO 件数取得絞る
-        // .limit(10)
-        // .offset((pageNo - 1) * 10); // ページ番号を使ってOFFSETを計算
+        .from('weekly_report')
+        .where('emp_id', employeeId)
+        .orderBy('period_start_date', 'desc');
+      // TODO 件数取得絞る
+      // .limit(10)
+      // .offset((pageNo - 1) * 10); // ページ番号を使ってOFFSETを計算
 
       res.json({ reportList });
     });
   } catch (error) {
     //  await trx.query("ROLLBACK"); // エラーが発生した場合、トランザクションをロールバック
     console.error(error);
-    res.status(400).send("Server Error");
+    res.status(400).send('Server Error');
   }
 };
 
@@ -69,18 +69,20 @@ const getDetailData = (req, res, db) => {
     'weekly_report.emp_id as emp_id',
     'emp_info.emp_lname as emp_lname',
     'emp_info.emp_fname as emp_fname',
+    'leader_emp_info.emp_id as leader_emp_id',
     'leader_emp_info.emp_lname as leader_emp_lname',
     'leader_emp_info.emp_fname as leader_emp_fname',
     'user_company_name',
+    'sales_emp_info.emp_id as sales_emp_id',
     'sales_emp_info.emp_lname as sales_emp_lname',
     'sales_emp_info.emp_fname as sales_emp_fname',
     'prime_contractor_name',
     'onsite_address',
     'fixed_time',
     db.raw(
-      'to_char("period_start_date", \'YYYY/MM/DD\') as "period_start_date"'
+      'to_char("period_start_date", \'YYYY-MM-DD\') as "period_start_date"'
     ),
-    db.raw('to_char("period_end_date", \'YYYY/MM/DD\') as "period_end_date"'),
+    db.raw('to_char("period_end_date", \'YYYY-MM-DD\') as "period_end_date"'),
     'source_of_sales_info',
     'how_to_collect_sales_info',
     'sales_info',
@@ -315,5 +317,5 @@ module.exports = {
   getDetailData,
   getLatestReport,
   submitReport,
-  editReport
+  editReport,
 };
