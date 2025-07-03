@@ -273,7 +273,7 @@ const editReport = (req, res, db) => {
     situationOfOtherEmployees,
   } = req.body;
   db('weekly_report')
-    .where({ reportId })
+    .where({ weekly_report_id: reportId })
     .update({
       emp_id: employeeId,
       leader_emp_id: leaderEmployeeId,
