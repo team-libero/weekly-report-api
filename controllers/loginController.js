@@ -16,7 +16,7 @@ const getLoginData = (req, res, db) => {
       'employee_mst.department_id',
       'department_mst.department_id'
     )
-    .innerJoin('team_mst', 'employee_mst.team_id', 'team_mst.team_id')
+    .leftOuterJoin('team_mst', 'employee_mst.team_id', 'team_mst.team_id')
     .where('login.login_id', req.body.user_id)
     .andWhere('login.password', req.body.password)
     .then((items) => {
