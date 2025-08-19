@@ -2,8 +2,7 @@ const express = require('express');
 const app = express();
 const employeeController = require('./controllers/employeeController');
 const loginController = require('./controllers/loginController');
-const reportController = require('./controllers/reportController');
-const reportDetailController = require('./controllers/reportDetailController');
+const weeklyReportController = require('./controllers/weeklyReportController');
 require('dotenv').config();
 
 //ミドルウェアを設定する
@@ -43,51 +42,54 @@ app.use(morgan('combined'));
 //ルーター
 app.get('/', (req, res) => res.send('APIサーバー起動中'));
 
-/* 社員マスタ */
-//取得
+/* ログインAPI */
+app.post('/login', (req, res) => 
+  loginController.getLoginData(req, res, db)
+);
+
+/* 社員一覧取得API */
 app.get('/employee/get', (req, res) =>
-  employeeController.getData(req, res, db)
+  employeeController.getEmployeeList(req, res, db)
 );
-//最大社員ID取得
-app.get('/employee/getMaxEmpId', (req, res) =>
-  employeeController.getMaxEmpId(req, res, db)
+
+/* 週報基本情報取得API */
+app.get('/reportsInfo', (req, res) =>
+  weeklyReportController.getBaseData(req, res, db)
 );
-//追加
-app.post('/employee/post', (req, res) =>
-  employeeController.postData(req, res, db)
+
+/* 週報一覧取得API */
+app.get('/reports', (req, res) =>
+  weeklyReportController.getWeeklyReportList(req, res, db)
 );
-//更新
-app.put('/employee/put', (req, res) =>
-  employeeController.putData(req, res, db)
+
+/* 週報詳細情報取得API */
+app.get('/reports/reportDetail', (req, res) =>
+  weeklyReportController.getDetailData(req, res, db)
 );
-//削除
-app.delete('/employee/delete', (req, res) =>
-  employeeController.delData(req, res, db)
+
+/* チームLDリスト取得API */
+app.get('/getTld', (req, res) => 
+  employeeController.getLeaders(req, res, db)
 );
-//LD一覧取得
-app.get('/getTld', (req, res) => employeeController.getLeaders(req, res, db));
-//営業社員一覧取得
+
+/* 営業社員リスト取得API */
 app.get('/getSalesEmployee', (req, res) =>
   employeeController.getSalesEmployees(req, res, db)
 );
 
-//週報登録
-app.post('/reports/reportRegister', (req, res) =>
-  reportController.submitReport(req, res, db)
-);
-
-/* ログイン */
-//取得
-app.post('/login', (req, res) => loginController.getLoginData(req, res, db));
-
-//週報更新
-app.put('/reports/reportRegister', (req, res) =>
-  reportController.editReport(req, res, db)
-);
-
-//前回の週報コピー
+/* 週報コピー情報取得API */
 app.get('/reports/reportRegister/copy', (req, res) =>
-  reportController.getLatestReport(req, res, db)
+  weeklyReportController.getLatestReport(req, res, db)
+);
+
+/* 週報情報登録API */
+app.post('/reports/reportRegister', (req, res) =>
+  weeklyReportController.submitReport(req, res, db)
+);
+
+/* 週報情報更新API */
+app.put('/reports/reportRegister', (req, res) =>
+  weeklyReportController.editReport(req, res, db)
 );
 
 //週報詳細情報取得
