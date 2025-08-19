@@ -64,8 +64,10 @@ const getWeeklyReportList = async (req, res, db) => {
 };
 
 /** 週報詳細情報取得API */
-const getDetailData = (req, res, db) => {
-  db.select(
+const getDetailData = async  (req, res, db) => {
+
+  try {
+    const items = await db.select(
     'weekly_report.emp_id as emp_id',
     'emp_info.emp_lname as emp_lname',
     'emp_info.emp_fname as emp_fname',
@@ -115,21 +117,49 @@ const getDetailData = (req, res, db) => {
       'weekly_report.sales_emp_id',
       'sales_emp_info.emp_id'
     )
-    .where('weekly_report.weekly_report_id', req.query.reportId)
-    .then((items) => {
-      if (items.length) {
-        res.json(items);
-      } else {
-        res.json({
+    .where('weekly_report.weekly_report_id', req.query.reportId);
+
+    // 取得結果が１件でない場合はエラー
+    if (items?.length !== 1) {
+      res.json({
           dataExists: 'false',
         });
-      }
-    })
-    .catch((err) =>
-      res.status(400).json({
-        dbError: 'error',
-      })
-    );
+    }
+
+    // 先週週報IDを取得
+    let lastWeekItems = await db.select('weekly_report.weekly_report_id as previewReportId')
+          .from('weekly_report')
+          .where('emp_id', items?.[0]?.emp_id)
+          .whereRaw('weekly_report.period_end_date < ?', items?.[0]?.period_start_date)
+          .orderBy('period_end_date', 'desc')
+          .limit(1);
+
+    // 取得結果が１件でない場合(0件の場合)は先週週報IDにnullを設定
+    if (lastWeekItems.length !== 1) {
+      lastWeekItems = [{previewReportId : null}];
+    }
+
+    // 翌週週報IDを取得
+    let nextWeekItems = await db.select('weekly_report.weekly_report_id as nextReportId')
+          .from('weekly_report')
+          .where('emp_id', items?.[0]?.emp_id)
+          .whereRaw('weekly_report.period_start_date > ?', items?.[0]?.period_end_date)
+          .orderBy('period_start_date', 'asc')
+          .limit(1);
+
+    // 取得結果が１件でない場合(0件の場合)は翌週週報IDにnullを設定
+    if (nextWeekItems.length !== 1) {
+      nextWeekItems = [{nextReportId : null}];
+    }
+
+    // 週報IDの取得結果に先週週報ID、翌週週報IDを付加して返却
+    const merged = { ...items[0], ...lastWeekItems[0], ...nextWeekItems[0] };
+    res.json(merged);
+
+   } catch (error) {
+    console.error(error);
+    res.status(400).send('Server Error');
+  } 
 };
 
 /* 週報コピー情報取得API */
