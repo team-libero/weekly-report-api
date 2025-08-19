@@ -25,10 +25,13 @@ const getBaseData = async (req, res, db) => {
             .select(trx.raw('MAX(wr2.weekly_report_id)'))
             .where({ 'wr2.emp_id': employeeId })
         );
-      res.json({ result });
+      const countResult = await trx('weekly_report')
+        .count('* as total')
+        .where('emp_id', employeeId);
+
+        res.json({ result, countResult });
     });
   } catch (error) {
-    //  await trx.query("ROLLBACK"); // エラーが発生した場合、トランザクションをロールバック
     console.error(error);
     res.status(400).send('Server Error');
   }
@@ -36,7 +39,7 @@ const getBaseData = async (req, res, db) => {
 
 /** 週報一覧取得API */
 const getWeeklyReportList = async (req, res, db) => {
-  const { employeeId, pageNo } = req.query;
+  const { employeeId, pageNo, dataAmount } = req.query;
 
   try {
     await db.transaction(async (trx) => {
@@ -49,15 +52,12 @@ const getWeeklyReportList = async (req, res, db) => {
         )
         .from('weekly_report')
         .where('emp_id', employeeId)
-        .orderBy('period_start_date', 'desc');
-      // TODO 件数取得絞る
-      // .limit(10)
-      // .offset((pageNo - 1) * 10); // ページ番号を使ってOFFSETを計算
-
+        .orderBy('period_start_date', 'desc')
+        .limit(dataAmount)
+        .offset((pageNo - 1) * dataAmount); // ページ番号を使ってOFFSETを計算
       res.json({ reportList });
     });
   } catch (error) {
-    //  await trx.query("ROLLBACK"); // エラーが発生した場合、トランザクションをロールバック
     console.error(error);
     res.status(400).send('Server Error');
   }
